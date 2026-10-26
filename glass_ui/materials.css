@@ -1,0 +1,56 @@
+/* Materials and culture mixing are independent worksheets in the same local app. */
+.module-panel{flex:1;min-height:0;display:flex;flex-direction:column}
+.module-tabs{display:flex;align-items:center;gap:6px;flex:none;margin:0 4px 14px;border-bottom:1px solid rgba(92,126,172,.25);padding-bottom:10px}
+.module-tabs button{font-size:14px;padding:7px 22px;min-height:36px;border-color:transparent;background:transparent;color:var(--muted)}
+.module-tabs button[aria-selected=true]{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+.module-tabs button[aria-selected=true]:hover{background:#18498e;color:#fff}
+/* Let the worksheet scroll as a whole before compressing a result table to one row. */
+.worksheet>section{flex-shrink:0}
+.worksheet>.results{flex:1 0 auto;min-height:210px}
+.worksheet .result-viewport{flex:1 0 130px;min-height:130px}
+.material-sidebar #materialTemplates{width:100%;flex:1;min-height:80px;white-space:nowrap;background:rgba(255,255,255,.48);padding:6px}
+.material-sidebar #materialTemplates option{padding:7px 8px;border-radius:4px}
+.material-sidebar #materialTemplates option:checked{color:white;background:var(--accent) linear-gradient(var(--accent),var(--accent))}
+.material-worksheet{gap:10px}
+.material-targets{display:grid;grid-template-columns:1.1fr 1fr 1.1fr;gap:14px;margin-top:10px;align-items:end}
+.material-label{display:flex;flex-direction:column;gap:5px;font-size:12px;color:var(--muted);min-width:0}
+.material-label :is(input,select){width:100%;color:var(--ink)}
+.material-targets .volume input{flex:1;min-width:0}
+.material-targets .volume select{width:70px;flex:none}
+.material-basis-note{border-left:3px solid var(--accent);padding:8px 11px;background:rgba(227,237,252,.72);font-size:12px;line-height:1.6;margin-top:12px}
+.material-worksheet section>.material-switch-hint{font-size:11px;margin-top:5px}
+.material-toolbar{margin-bottom:9px}
+.material-toolbar-actions{display:flex;align-items:center;gap:12px;min-width:0}
+.material-mass-unit{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);white-space:nowrap}
+.material-mass-unit select{width:70px;color:var(--ink)}
+.material-columns{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr) 28px;gap:12px}
+.molar-mode .material-columns{grid-template-columns:minmax(0,1fr) minmax(0,1.15fr) minmax(0,1.3fr) 28px}
+.material-field-pair{display:grid;grid-template-columns:minmax(0,1fr) 72px;gap:6px;min-width:0}
+.material-molar-mass{grid-template-columns:minmax(0,1fr) 96px}
+.material-field-pair :is(input,select){width:100%;min-width:0;height:36px}
+.material-field-pair select{padding-left:7px;padding-right:4px}
+.molar-mode .material-result-viewport table{min-width:660px}
+.material-worksheet .column-labels{padding-right:12px}
+#materialComponents{max-height:calc(126px + 2 * var(--focus-gutter));margin:calc(-1 * var(--focus-gutter));padding:var(--focus-gutter);scroll-padding:var(--focus-gutter);overflow:auto;scrollbar-gutter:stable;overscroll-behavior:contain}
+.material-row{margin-bottom:6px;align-items:center}
+.material-row:last-child{margin-bottom:0}
+.material-row input{width:100%;height:36px}
+.material-row .remove{background:transparent;border-color:transparent;padding:0;min-height:30px;font-size:18px;color:var(--muted)}
+.material-row .remove:hover{background:rgba(255,255,255,.5)}
+.material-calculate-row{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-top:10px}
+.material-calculate-row .primary{padding:8px 24px;min-height:39px}
+.material-worksheet .material-result-viewport{flex-basis:145px;min-height:145px}
+.material-result-viewport table{min-width:440px}
+#materialSummary{margin-top:0;padding:0 4px}
+.material-notes-details{flex:none;border-top:1px solid rgba(92,126,172,.2);padding:7px 4px 0}
+.material-notes-details summary{cursor:pointer;font-size:12px;color:var(--muted);line-height:1.6}
+.material-notes-details summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
+.material-result-notes{display:flex;flex-direction:column;gap:4px;padding:7px 0 0}
+.material-result-notes p{font-size:11px;line-height:1.5;color:var(--muted)}
+.worksheet>.material-results{min-height:245px}
+@media(max-width:1050px){.material-targets{grid-template-columns:1.15fr 1fr;gap:10px}.material-targets>.material-label:last-child{grid-column:1/-1}.material-targets>.material-label:last-child{flex-direction:row;align-items:center;gap:10px}.material-targets>.material-label:last-child input{width:auto;flex:1}.material-columns{gap:8px}}
+@media(max-height:760px){.module-tabs{margin-bottom:10px;padding-bottom:8px}.module-tabs button{padding:5px 20px;min-height:31px}.material-worksheet{gap:7px}.material-targets{margin-top:7px}.material-basis-note{margin-top:8px;padding:6px 10px}.material-toolbar{margin-bottom:6px}.material-calculate-row{margin-top:8px}}
+@media(max-height:650px){.module-tabs{margin-bottom:7px;padding-bottom:6px}.module-tabs button{min-height:29px;font-size:13px;padding:4px 18px}.material-worksheet{gap:5px}.material-basis-note{margin-top:7px;padding:5px 9px;font-size:11px}.material-targets{margin-top:6px;gap:6px 10px}.material-targets .volume select{width:60px}.material-toolbar{margin-bottom:4px}#materialComponents{max-height:calc(98px + 2 * var(--focus-gutter))}.material-row input{height:30px;min-height:30px}.material-row{margin-bottom:4px}.material-calculate-row{margin-top:6px}.material-calculate-row .primary{min-height:32px;padding:5px 18px}.material-result-notes{padding-top:5px}.material-results{min-height:165px}}
+body.reduce-transparency :is(.material-basis-note,#materialTemplates),body.no-blur :is(.material-basis-note,#materialTemplates){background:#f5f8fd}
+@media(forced-colors:active){.module-tabs button[aria-selected=true]{background:Highlight;color:HighlightText;border-color:Highlight}.material-label,.material-result-notes p{color:CanvasText}.module-tabs,.material-basis-note{border-color:CanvasText}.material-basis-note{background:Canvas;color:CanvasText}}
+

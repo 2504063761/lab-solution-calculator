@@ -1,0 +1,25 @@
+# Runtime and user data
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+.env.*
+templates.json
+materials_templates.json
+cfu_calibrations.json
+*.csv
+*.xlsx
+# Local build and generated artifacts
+.build/
+.test-tmp/
+dist/
+*.spec
+*.log
+*.exe
+*.zip
+# Editors and local OS files
+.vscode/
+.idea/
+Thumbs.db
+Desktop.ini

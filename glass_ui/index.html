@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' data:; script-src 'self' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; connect-src 'self'; object-src 'none'; base-uri 'none'">
+  <title>实验配液计算器</title><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="materials.css"><link rel="stylesheet" href="brand.css">
+</head>
+<body data-module="mix">
+  <div class="backdrop" aria-hidden="true"><div class="orb orb-a"></div><div class="orb orb-b"></div><div class="glass-ribbon"></div></div>
+  <div class="app">
+    <header class="app-header"><div><h1 class="brand-title" aria-label="实验配液计算器"><img src="brand-wordmark.svg" alt="" aria-hidden="true" draggable="false"><span class="brand-fallback" aria-hidden="true">实验配液计算器</span></h1></div><div class="header-actions"><span id="version">离线桌面版</span><button id="openCFU">OD600 ↔ CFU</button><button id="help" class="subtle">使用说明</button></div></header>
+    <nav class="module-tabs" role="tablist" aria-label="计算模块"><button type="button" id="mixTab" role="tab" aria-selected="true" aria-controls="mixPanel">菌液配比</button><button type="button" id="materialsTab" role="tab" aria-selected="false" aria-controls="materialsPanel" tabindex="-1">材料配制</button></nav>
+    <section id="mixPanel" class="module-panel" role="tabpanel" aria-labelledby="mixTab">
+    <div id="notice" class="notice" role="alert" hidden></div>
+    <div class="workspace">
+      <aside class="glass sidebar" aria-label="模板管理">
+        <div class="section-head"><h2>模板库</h2><span id="templateCount" class="muted">0 个模板</span></div>
+        <button id="newRecipe" class="wide">＋ 新建空白配方</button>
+        <select id="templateList" size="4" aria-label="选择模板"></select>
+        <button id="loadTemplate" class="wide">调用选中模板</button>
+        <div class="divider"></div><h2>保存当前配方</h2>
+        <p id="currentTemplate" class="muted current">当前配方：未保存</p>
+        <label for="templateName">模板名称</label><input id="templateName" autocomplete="off">
+        <label class="check"><input id="includeOD" type="checkbox">包含本次初始 OD</label>
+        <p class="hint">不勾选时，调用后重新填写 OD。</p>
+        <button id="saveAs" class="wide">保存为新模板 / 另存为</button><button id="updateTemplate" class="wide">更新当前模板</button>
+        <div class="template-actions"><button id="renameTemplate" class="subtle">重命名</button><button id="deleteTemplate" class="danger">删除</button></div>
+      </aside>
+      <main class="glass worksheet">
+        <section aria-labelledby="culturesHeading">
+          <div class="section-head culture-toolbar"><h2 id="culturesHeading">菌液读数</h2><div class="inline"><label for="cultureCount" class="muted">菌种数量</label><input type="number" id="cultureCount" min="1" value="3"><button id="applyCount">设置</button><button id="addRow">＋ 增加一行</button></div></div>
+          <div class="culture-columns column-labels"><span>菌种 / 样品名</span><span>测得初始 OD</span><span>测定稀释倍数</span><span>OD 贡献比例</span><span></span></div>
+          <div id="cultures" aria-label="菌液读数列表"></div>
+          <p class="hint">原液直测：倍数填 1；测前稀释 10 倍：倍数填 10。OD 均须扣除空白。</p>
+        </section>
+        <div class="divider"></div>
+        <section aria-labelledby="targetHeading"><h2 id="targetHeading">配液目标</h2>
+          <div class="targets"><label>混合液目标总 OD<input id="targetOD" inputmode="decimal" autocomplete="off"></label><label>最终总体积<div class="volume"><input id="volume" inputmode="decimal" autocomplete="off"><select id="unit" aria-label="体积单位"><option>µL</option><option>mL</option></select></div></label><button id="calculate" class="primary">计算配液量</button></div>
+          <div class="modes"><label><input type="radio" name="mode" value="separate" checked>分别稀释后混合</label><label><input type="radio" name="mode" value="direct">原液直接混合</label></div>
+          <p id="modeHint" class="hint">每种菌分别配成等体积，再将所有调整液全部合并。</p>
+        </section>
+        <div class="divider"></div>
+        <section class="results" aria-labelledby="resultHeading"><div class="section-head"><div class="inline"><h2 id="resultHeading">配液结果</h2><span id="resultBadge" class="badge">待计算</span></div><div class="inline"><button id="copyResult" disabled>复制配液表</button><button id="exportCSV" disabled>导出 CSV</button></div></div>
+          <div id="resultViewport" class="result-viewport"><table><thead><tr id="resultHeaders"></tr></thead><tbody id="resultRows"></tbody></table><div id="emptyResult" class="empty-result"><strong>等待本次配液数据</strong><p>补齐 OD、目标总 OD 与最终体积，再点击“计算配液量”。</p></div></div>
+          <p id="summary" class="hint">体积统一以 µL 显示，保留三位小数。比例表示 OD 贡献，不换算活菌数量。</p>
+        </section>
+      </main>
+    </div>
+    <footer><span id="status" role="status" aria-live="polite">正在加载本地模板…</span><span>Ctrl + Enter 计算</span></footer>
+    </section>
+    <section id="materialsPanel" class="module-panel" role="tabpanel" aria-labelledby="materialsTab" hidden>
+      <div id="materialNotice" class="notice" role="alert" hidden></div>
+      <div class="workspace material-workspace">
+        <aside class="glass sidebar material-sidebar" aria-label="材料模板管理">
+          <div class="section-head"><h2>材料模板</h2><span id="materialTemplateCount" class="muted">0 个模板</span></div>
+          <button type="button" id="materialNew" class="wide">＋ 新建空白配方</button>
+          <select id="materialTemplates" size="4" aria-label="选择材料模板"></select>
+          <button type="button" id="materialLoad" class="wide" disabled>调用选中模板</button>
+          <div class="divider"></div><h2>保存当前配方</h2>
+          <p id="materialCurrent" class="muted current">当前配方：未保存</p>
+          <label for="materialTemplateName">模板名称</label><input id="materialTemplateName" autocomplete="off" maxlength="120">
+          <p class="hint">保存浓度口径、组分、总量和溶剂名称。与菌液模板独立。</p>
+          <button type="button" id="materialSaveAs" class="wide">保存为新模板 / 另存为</button>
+          <button type="button" id="materialUpdate" class="wide" disabled>更新当前模板</button>
+          <button type="button" id="materialDelete" class="danger wide" disabled>删除选中模板</button>
+        </aside>
+        <main class="glass worksheet material-worksheet">
+          <section aria-labelledby="materialTargetHeading">
+            <h2 id="materialTargetHeading">配制目标</h2>
+            <div class="material-targets">
+              <label class="material-label" for="materialBasis">浓度口径<select id="materialBasis" aria-describedby="materialBasisHint"><option value="ww">w/w · 质量 / 质量</option><option value="wv">w/v · 质量 / 体积</option><option value="vv">v/v · 体积 / 体积</option><option value="molar">摩尔浓度 · M / mM / μM / nM</option></select></label>
+              <label class="material-label" for="materialTotal"><span id="materialTotalLabel">最终总质量</span><span class="volume"><input id="materialTotal" inputmode="decimal" autocomplete="off"><select id="materialUnit" aria-label="最终总量单位"><option>g</option><option>mg</option><option>kg</option></select></span></label>
+              <label class="material-label" for="materialSolvent">溶剂 / 基质名称（可选）<input id="materialSolvent" autocomplete="off" maxlength="120" placeholder="按实际配方填写"></label>
+            </div>
+            <p id="materialBasisHint" class="material-basis-note">w/w：每 100 g 最终配方中含多少 g 组分；溶剂按剩余质量补足。</p>
+            <p class="hint material-switch-hint">切换口径只改变计算定义，不自动换算浓度。各组分均以最终配方的总量为分母。</p>
+          </section>
+          <div class="divider"></div>
+          <section aria-labelledby="materialComponentsHeading">
+            <div class="section-head material-toolbar"><h2 id="materialComponentsHeading">材料组分</h2><div class="material-toolbar-actions"><label id="materialMassUnitLabel" class="material-mass-unit" hidden>称量单位<select id="materialMassUnit"><option>g</option><option selected>mg</option><option>μg</option></select></label><button type="button" id="materialAdd">＋ 增加组分</button></div></div>
+            <div class="material-columns column-labels"><span>材料名称</span><span id="materialPercentLabel">目标浓度（% w/w）</span><span id="materialMolarMassLabel" hidden>摩尔质量</span><span></span></div>
+            <div id="materialComponents" aria-label="材料组分列表"></div>
+            <div class="material-calculate-row"><p id="materialInputHint" class="hint">浓度为百分数：20% 填 20。支持科学计数法。</p><button type="button" id="materialCalculate" class="primary">计算材料用量</button></div>
+          </section>
+          <div class="divider"></div>
+          <section class="results material-results" aria-labelledby="materialResultHeading">
+            <div class="section-head"><div class="inline"><h2 id="materialResultHeading">配制结果</h2><span id="materialResultBadge" class="badge">待计算</span></div><div class="inline"><button type="button" id="materialCopy" disabled>复制配制表</button><button type="button" id="materialExport" disabled>导出 CSV</button></div></div>
+            <div class="result-viewport material-result-viewport"><table><thead><tr id="materialResultHeaders"></tr></thead><tbody id="materialResultRows"></tbody></table><div id="materialEmpty" class="empty-result"><strong>等待材料配方</strong><p>填写最终总量、材料名称和目标浓度，再计算用量。</p></div></div>
+            <p id="materialSummary" class="hint">按纯组分计算；请按实际材料的溶解性和配制要求操作。</p>
+            <details id="materialNotesDetails" class="material-notes-details" hidden><summary>查看计算依据与配制说明</summary><div id="materialNotes" class="material-result-notes"></div></details>
+          </section>
+        </main>
+      </div>
+      <footer><span id="materialStatus" role="status" aria-live="polite">选择浓度口径，填写本次材料配方。</span><span>Ctrl + Enter 计算 · Ctrl + S 保存模板</span></footer>
+    </section>
+  </div>
+  <dialog id="cfuDialog" class="cfu-dialog" aria-labelledby="cfuTitle" aria-describedby="cfuDescription">
+    <div class="cfu-dialog-shell">
+      <header class="cfu-header"><div><h2 id="cfuTitle">OD600 ↔ CFU</h2><p id="cfuDescription">使用自定义校准系数，估算原液浓度。</p></div><button type="button" id="cfuClose" class="subtle">关闭</button></header>
+      <p class="cfu-intro">OD600 与 CFU 没有统一换算系数，请使用同菌株和测量条件下的校准系数。结果为估算，不替代平板计数。</p>
+      <div id="cfuStorageNotice" class="notice cfu-notice" role="alert" hidden></div>
+      <div class="cfu-layout">
+        <section class="cfu-calibration cfu-pane" aria-labelledby="cfuLibraryHeading">
+          <div class="section-head"><h3 id="cfuLibraryHeading">校准系数库</h3><span id="cfuProfileCount" class="muted">0 个方案</span></div>
+          <label for="cfuProfiles" class="cfu-label">已保存方案</label><select id="cfuProfiles" aria-label="选择校准方案"><option value="">暂无已保存方案</option></select>
+          <div class="cfu-pair cfu-library-actions"><button type="button" id="cfuLoad" disabled>调用方案</button><button type="button" id="cfuNew">新建</button></div>
+          <p id="cfuCurrent" class="hint">当前方案：未保存</p>
+          <label for="cfuName" class="cfu-label">方案名称</label><input id="cfuName" autocomplete="off" maxlength="120" placeholder="用于保存和调用">
+          <label for="cfuSpecies" class="cfu-label">菌种 / 菌株（可选）</label><input id="cfuSpecies" autocomplete="off" maxlength="120">
+          <label for="cfuCoefficient" class="cfu-label">校准系数 k</label><input id="cfuCoefficient" inputmode="decimal" autocomplete="off" aria-describedby="cfuCoefficientHint" placeholder="填写你的校准系数">
+          <p id="cfuCoefficientHint" class="hint">每单位 OD600 对应的 CFU/mL，支持科学计数法。仅采用过原点的线性关系。</p>
+          <details class="cfu-options"><summary>适用范围与测量条件（可选）</summary><div class="cfu-options-content">
+            <p class="hint">范围对应实测或预计实测 OD600，按校准时的测量条件填写。</p>
+            <div class="cfu-pair"><label class="cfu-label">OD600 下限<input id="cfuOdMin" inputmode="decimal" autocomplete="off" placeholder="可留空"></label><label class="cfu-label">OD600 上限<input id="cfuOdMax" inputmode="decimal" autocomplete="off" placeholder="可留空"></label></div>
+            <label for="cfuNotes" class="cfu-label">仪器、培养条件或备注</label><input id="cfuNotes" autocomplete="off" maxlength="1000">
+          </div></details>
+          <button type="button" id="cfuSaveAs" class="wide">保存为新方案</button>
+          <div class="cfu-pair"><button type="button" id="cfuUpdate" disabled>更新当前方案</button><button type="button" id="cfuDelete" class="danger" disabled>删除</button></div>
+          <p class="hint">只保存校准系数与条件，不保存本轮 OD600 / CFU 读数。</p>
+        </section>
+        <section class="cfu-converter cfu-pane" aria-labelledby="cfuConvertHeading">
+          <h3 id="cfuConvertHeading">本次换算</h3>
+          <label for="cfuDirection" class="cfu-label">换算方向</label><select id="cfuDirection"><option value="od_to_cfu">OD600 → CFU/mL</option><option value="cfu_to_od">CFU/mL → OD600</option></select>
+          <div class="cfu-inputs"><label class="cfu-label"><span id="cfuValueLabel">实测 OD600（已扣空白）</span><input id="cfuValue" inputmode="decimal" autocomplete="off" aria-describedby="cfuValueHint"></label><label class="cfu-label">测前稀释倍数<input id="cfuDilution" inputmode="decimal" autocomplete="off" value="1" aria-describedby="cfuDilutionHint"></label></div>
+          <p id="cfuValueHint" class="hint">填写 OD600 的实际读数，不自动使用配液页面中的 OD。</p>
+          <p id="cfuDilutionHint" class="hint">原液直接测量填 1；测量前稀释后，填写相应倍数。</p>
+          <button type="button" id="cfuCalculate" class="primary">换算浓度</button>
+          <div id="cfuError" class="notice cfu-notice" role="alert" hidden></div>
+          <section class="cfu-result" aria-labelledby="cfuResultHeading"><div class="section-head"><h3 id="cfuResultHeading">换算结果</h3><span id="cfuResultBadge" class="badge">待换算</span></div>
+            <div class="cfu-metric"><span id="cfuMetricLabel">估算原液 CFU/mL</span><strong id="cfuMetricValue">—</strong></div>
+            <dl class="cfu-result-pair"><div><dt id="cfuMeasuredLabel">实测 OD600</dt><dd id="cfuMeasuredValue">—</dd></div><div><dt id="cfuSecondaryLabel">原液等效 OD600</dt><dd id="cfuSecondaryValue">—</dd></div></dl>
+            <p id="cfuEmpty" class="hint">先填写或调用左侧校准系数，再填写本次读数并换算。</p>
+            <div id="cfuWarnings" class="cfu-warnings" role="status" aria-live="polite" hidden></div>
+            <p id="cfuFormula" class="hint">估算原液 CFU/mL = k × 实测 OD600 × 测前稀释倍数</p>
+            <details id="cfuRecord" class="cfu-record" hidden><summary>查看完整换算记录</summary><div class="cfu-record-viewport"><table><thead><tr id="cfuResultHeaders"></tr></thead><tbody id="cfuResultRows"></tbody></table></div></details>
+          </section>
+          <div class="cfu-result-actions"><button type="button" id="cfuCopy" disabled>复制换算结果</button><button type="button" id="cfuExport" disabled>导出 CSV</button></div>
+          <p class="hint cfu-scope">仅用于所校准的单一菌株；不由混合菌总 OD 拆分各菌 CFU。</p>
+        </section>
+      </div>
+      <footer class="cfu-footer"><span id="cfuStatus" role="status" aria-live="polite">填写校准系数后开始换算。</span><span>Ctrl + Enter 换算 · Ctrl + S 保存系数</span></footer>
+    </div>
+  </dialog>
+  <dialog id="modal" aria-labelledby="modalTitle"><form method="dialog"><h2 id="modalTitle"></h2><p id="modalBody"></p><label id="modalInputLabel" hidden>模板名称<input id="modalInput" autocomplete="off"></label><div class="dialog-actions"><button type="button" value="cancel" id="modalCancel">取消</button><button value="ok" id="modalOK" class="primary">确认</button></div></form></dialog>
+  <script src="app.js"></script><script src="cfu.js"></script><script src="materials.js"></script>
+</body></html>
